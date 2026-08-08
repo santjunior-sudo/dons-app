@@ -9,7 +9,32 @@ import type { Quiz } from "@/lib/types";
 export const donsQuiz: Quiz = {
   id: "dons-corpo-em-acao",
   title: "DONS",
+  subtitle: "O Corpo em Ação",
   tagline: "Diferentes dons. O mesmo Espírito. Um só Corpo. E o amor como caminho.",
+  passage: "1 Coríntios 12–14",
+  meter: {
+    variant: "body",
+    title: "Corpo em construção",
+    stages: [
+      { at: 20, label: "Visão" },
+      { at: 40, label: "Audição" },
+      { at: 60, label: "Mãos" },
+      { at: 80, label: "Pés" },
+      { at: 100, label: "Coração" },
+    ],
+  },
+  finale: {
+    glyphs: ["👁", "👂", "🖐", "🦶", "❤️"],
+    beats: [
+      {
+        at: 0,
+        lines: ["UM CORPO.", "MUITOS MEMBROS.", "O MESMO ESPÍRITO."],
+        tone: "text-white",
+      },
+      { at: 4200, lines: ["DIFERENTES DONS.", "UM MESMO PROPÓSITO."], tone: "text-sky-200" },
+      { at: 7600, lines: ["AMOR + EDIFICAÇÃO"], tone: "text-amber-300" },
+    ],
+  },
   acts: [
     {
       act: 1,
@@ -146,7 +171,13 @@ export const donsQuiz: Quiz = {
       basePoints: 1000,
       speedBonus: 300,
       dimensions: ["corpo"],
-      scene: "eyes",
+      scene: "glyphs",
+      glyphs: {
+        before: ["👁", "👁", "👁", "👁", "👁"],
+        after: ["👁", "👂", "🖐", "🦶", "❤️"],
+        captionBefore: "Um corpo inteiro de olhos...",
+        captionAfter: "A diversidade não é um defeito do Corpo. É parte do projeto.",
+      },
       headline: "A diversidade não é um defeito do Corpo. É parte do projeto.",
     },
     {
@@ -215,6 +246,8 @@ export const donsQuiz: Quiz = {
       speedBonus: 400,
       dimensions: ["conhecimento", "edificacao"],
       scene: "boss",
+      headlineNote:
+        "O amor não é mais um dom da lista. Ele governa a maneira como os dons são exercidos.",
       setup: [
         "Imagine alguém que fala línguas...",
         "que profetiza...",

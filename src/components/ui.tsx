@@ -17,7 +17,7 @@ export function Stage({
   );
 }
 
-export function Wordmark({ size = "text-3xl" }: { size?: string }) {
+export function Wordmark({ size = "text-3xl", label = "DONS" }: { size?: string; label?: string }) {
   return (
     <div className="flex items-center gap-3">
       <svg width="34" height="34" viewBox="0 0 40 40" aria-hidden>
@@ -37,7 +37,7 @@ export function Wordmark({ size = "text-3xl" }: { size?: string }) {
           <path d="M29 20 L37 20" />
         </g>
       </svg>
-      <span className={`display ${size} text-glow`}>DONS</span>
+      <span className={`display ${size} text-balance text-glow`}>{label}</span>
     </div>
   );
 }

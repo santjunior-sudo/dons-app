@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DONS — O Corpo em Ação",
+  title: "Experiências bíblicas interativas",
   description:
-    "Uma experiência interativa sobre dons espirituais, amor e edificação em 1 Coríntios 12–14.",
+    "Dinâmicas multiplayer para a aula: o professor projeta o telão e a turma participa pelo celular.",
 };
 
 export const viewport: Viewport = {

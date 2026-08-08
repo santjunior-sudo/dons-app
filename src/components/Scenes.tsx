@@ -1,18 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { FinaleConfig, GlyphScene } from "@/lib/types";
 
-/** ATO 2 — o corpo formado apenas por olhos, que depois se diversifica. */
-export function EyesScene({ revealed }: { revealed: boolean }) {
-  const eyes = ["👁", "👁", "👁", "👁", "👁"];
-  const members = ["👁", "👂", "🖐", "🦶", "❤️"];
-  const shown = revealed ? members : eyes;
+/** Cena de símbolos: o "antes" vira "depois" quando o telão revela. */
+export function GlyphsScene({ glyphs, revealed }: { glyphs: GlyphScene; revealed: boolean }) {
+  const shown = revealed ? glyphs.after : glyphs.before;
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="flex items-center gap-3 text-5xl md:text-6xl">
         {shown.map((glyph, i) => (
           <span
-            key={`${revealed ? "m" : "e"}-${i}`}
+            key={`${revealed ? "a" : "b"}-${i}`}
             className="pop-in inline-block"
             style={{ animationDelay: `${i * 110}ms` }}
           >
@@ -21,25 +20,27 @@ export function EyesScene({ revealed }: { revealed: boolean }) {
         ))}
       </div>
       <p
-        className={`display text-center text-xl md:text-2xl transition-colors ${
+        className={`display text-balance text-center text-xl md:text-2xl transition-colors ${
           revealed ? "text-amber-200" : "text-white/45"
         }`}
       >
-        {revealed
-          ? "A diversidade não é um defeito do Corpo. É parte do projeto."
-          : "Um corpo inteiro de olhos..."}
+        {revealed ? glyphs.captionAfter : glyphs.captionBefore}
       </p>
     </div>
   );
 }
 
-/** ATO 3 — o boss round: o acúmulo de dons e a subtração do amor. */
+/** Boss round: o acúmulo revelado linha a linha e a virada na revelação. */
 export function BossScene({
   lines,
+  headline,
+  note,
   revealed,
   active,
 }: {
   lines: string[];
+  headline?: string;
+  note?: string;
   revealed: boolean;
   active: boolean;
 }) {
@@ -56,14 +57,15 @@ export function BossScene({
 
   if (revealed) {
     return (
-      <div className="flex flex-col items-center gap-6 py-4">
-        <div className="display shake-soft text-center text-4xl md:text-7xl text-amber-300 text-glow">
-          DOM <span className="text-white/60">−</span> AMOR <span className="text-white/60">=</span>{" "}
-          <span className="text-rose-300">NADA</span>
+      <div className="flex flex-col items-center gap-5 py-3">
+        <div className="display shake-soft text-balance text-center text-4xl md:text-6xl text-amber-300 text-glow">
+          {headline}
         </div>
-        <p className="max-w-2xl text-center text-lg md:text-xl text-white/80">
-          O amor não é mais um dom da lista. Ele governa a maneira como os dons são exercidos.
-        </p>
+        {note && (
+          <p className="max-w-3xl text-balance text-center text-lg md:text-xl text-white/80">
+            {note}
+          </p>
+        )}
       </div>
     );
   }
@@ -84,34 +86,33 @@ export function BossScene({
   );
 }
 
-const FINAL_BEATS = [
-  { at: 0, lines: ["UM CORPO.", "MUITOS MEMBROS.", "O MESMO ESPÍRITO."], tone: "text-white" },
-  { at: 4200, lines: ["DIFERENTES DONS.", "UM MESMO PROPÓSITO."], tone: "text-sky-200" },
-  { at: 7600, lines: ["AMOR + EDIFICAÇÃO"], tone: "text-amber-300" },
-];
-
-/** ATO 4 — encerramento coletivo: as partes convergem e formam o Corpo. */
-export function FinalScene({ intensity = 1 }: { intensity?: number }) {
+/** Encerramento coletivo: os símbolos convergem e as frases entram em sequência. */
+export function FinalScene({
+  finale,
+  intensity = 1,
+}: {
+  finale: FinaleConfig;
+  intensity?: number;
+}) {
   const [beat, setBeat] = useState(0);
 
   useEffect(() => {
-    const timers = FINAL_BEATS.map((b, i) => setTimeout(() => setBeat(i), b.at));
+    const timers = finale.beats.map((b, i) => setTimeout(() => setBeat(i), b.at));
     return () => timers.forEach(clearTimeout);
-  }, []);
+  }, [finale]);
 
-  const current = FINAL_BEATS[beat];
-  const parts = ["👁", "👂", "🖐", "🦶", "❤️"];
+  const current = finale.beats[beat] ?? finale.beats[0];
 
   return (
     <div className="relative flex flex-col items-center justify-center gap-8 py-8">
       <div className="relative flex items-center gap-4 text-5xl md:text-7xl">
-        {parts.map((glyph, i) => (
+        {finale.glyphs.map((glyph, i) => (
           <span
-            key={glyph}
+            key={`${glyph}-${i}`}
             className="converge inline-block"
             style={
               {
-                "--dx": `${(i - 2) * 120}px`,
+                "--dx": `${(i - (finale.glyphs.length - 1) / 2) * 120}px`,
                 "--dy": `${i % 2 === 0 ? -90 : 90}px`,
                 animationDelay: `${i * 120}ms`,
               } as React.CSSProperties
@@ -155,13 +156,16 @@ export function FinalScene({ intensity = 1 }: { intensity?: number }) {
   );
 }
 
-/** Contagem regressiva 3 · 2 · 1 · DONS. */
-export function Countdown({ remainingMs }: { remainingMs: number }) {
+/** Contagem regressiva 3 · 2 · 1. */
+export function Countdown({ remainingMs, word }: { remainingMs: number; word: string }) {
   const s = Math.ceil(remainingMs / 1000);
-  const label = s >= 4 ? "PREPARE-SE" : s === 3 ? "3" : s === 2 ? "2" : s === 1 ? "1" : "DONS";
+  const label = s >= 4 ? "PREPARE-SE" : s === 3 ? "3" : s === 2 ? "2" : s === 1 ? "1" : word;
   return (
     <div className="grid min-h-dvh place-items-center">
-      <div key={label} className="count-zoom display text-center text-8xl md:text-[12rem] text-glow">
+      <div
+        key={label}
+        className="count-zoom display text-balance text-center text-7xl md:text-[10rem] text-glow"
+      >
         {label}
       </div>
     </div>

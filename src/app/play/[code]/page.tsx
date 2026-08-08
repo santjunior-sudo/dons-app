@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import BodyMeter from "@/components/BodyMeter";
+import Meter from "@/components/Meter";
 import { Countdown } from "@/components/Scenes";
 import { Reference, Stage, TimerRing, Wordmark } from "@/components/ui";
 import { loadPlayer, playerFromCookie, savePlayer } from "@/lib/playerStorage";
@@ -189,12 +189,12 @@ function PlayerBody({
               {snapshot.playerCount} {snapshot.playerCount === 1 ? "pessoa" : "pessoas"} na sala
             </span>
           </div>
-          <BodyMeter progress={0} size={140} compact />
+          <Meter meter={snapshot.meter} progress={0} size={130} compact />
         </div>
       );
 
     case "COUNTDOWN":
-      return <Countdown remainingMs={remaining} />;
+      return <Countdown remainingMs={remaining} word={snapshot.quizTitle} />;
 
     case "TRANSITION":
       return (
@@ -360,8 +360,10 @@ function PlayerBody({
     case "FINAL":
       return (
         <div className="flex h-full flex-col items-center justify-center gap-5 text-center">
-          <BodyMeter progress={100} size={170} compact celebrate />
-          <h1 className="display rise text-3xl text-glow">UM CORPO. MUITOS MEMBROS.</h1>
+          <Meter meter={snapshot.meter} progress={100} size={150} compact celebrate />
+          <h1 className="display rise text-balance text-2xl text-glow">
+            {snapshot.finale.beats[0]?.lines.join(" ")}
+          </h1>
           <p className="rise text-white/70" style={{ animationDelay: "200ms" }}>
             Olhe para o telão.
           </p>

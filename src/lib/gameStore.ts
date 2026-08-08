@@ -1,4 +1,5 @@
 import donsQuiz from "@/data/donsQuiz";
+import joao17Quiz from "@/data/joao17Quiz";
 import { readState, scheduleWrite } from "@/lib/persistence";
 import type {
   ActInfo,
@@ -73,7 +74,10 @@ const store: Store =
   g.__donsStore ??
   (g.__donsStore = {
     sessions: new Map<string, Session>(),
-    quizzes: new Map<string, Quiz>([[donsQuiz.id, donsQuiz]]),
+    quizzes: new Map<string, Quiz>([
+      [donsQuiz.id, donsQuiz],
+      [joao17Quiz.id, joao17Quiz],
+    ]),
   });
 
 /* ------------------------------------------------------------------ */
@@ -748,12 +752,14 @@ function publicQuestion(session: Session, revealed: boolean): PublicQuestion | n
     reference: q.reference,
     timeLimitSec: q.timeLimitSec,
     scene: q.scene,
+    glyphs: q.glyphs,
     setup: q.setup,
   };
   if (revealed) {
     base.correctId = q.correctId;
     base.explanation = q.explanation;
     base.headline = q.headline;
+    base.headlineNote = q.headlineNote;
   }
   return base;
 }
@@ -777,8 +783,13 @@ export function snapshotFor(session: Session, playerId: string | null): Snapshot
 
   const snapshot: Snapshot = {
     code: session.code,
+    quizId: session.quiz.id,
     quizTitle: session.quiz.title,
+    quizSubtitle: session.quiz.subtitle,
     quizTagline: session.quiz.tagline,
+    quizPassage: session.quiz.passage,
+    meter: session.quiz.meter,
+    finale: session.quiz.finale,
     state: session.state,
     autoAdvance: session.autoAdvance,
     startedAt: session.startedAt,

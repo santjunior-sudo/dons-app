@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import BodyMeter from "@/components/BodyMeter";
-import { BossScene, Countdown, EyesScene, FinalScene } from "@/components/Scenes";
+import Meter from "@/components/Meter";
+import { BossScene, Countdown, FinalScene, GlyphsScene } from "@/components/Scenes";
 import { Reference, Stage, TimerRing, Wordmark } from "@/components/ui";
 import { CHURCH_NAME, EVENT_SUBTITLE } from "@/lib/branding";
 import { useGame, useRemaining } from "@/lib/useGame";
@@ -83,14 +83,14 @@ export default function HostPage() {
     <Stage act={act} className="h-dvh overflow-hidden">
       <div className="flex h-dvh flex-col">
         <header className="flex items-center justify-between gap-4 px-6 py-4 md:px-10">
-          <Wordmark size="text-2xl" />
+          <Wordmark size="text-2xl" label={snapshot.quizTitle} />
           <div className="flex items-center gap-4">
             {snapshot.state !== "LOBBY" && (
               <div className="hidden items-center gap-3 md:flex">
-                <BodyMeter progress={snapshot.bodyProgress} size={44} compact />
+                <Meter meter={snapshot.meter} progress={snapshot.bodyProgress} size={44} compact />
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">
-                    Corpo em construção
+                    {snapshot.meter.title}
                   </p>
                   <p className="tabular display text-lg">{snapshot.bodyProgress}%</p>
                 </div>
@@ -142,7 +142,7 @@ function HostBody({
       return <Lobby snapshot={snapshot} joinUrl={joinUrl} />;
 
     case "COUNTDOWN":
-      return <Countdown remainingMs={remaining} />;
+      return <Countdown remainingMs={remaining} word={snapshot.quizTitle} />;
 
     case "TRANSITION":
       return (
@@ -205,14 +205,16 @@ function HostBody({
           </div>
 
           {/* Cenas cinematográficas */}
-          {q.scene === "eyes" && (
+          {q.scene === "glyphs" && q.glyphs && (
             <div className="py-1">
-              <EyesScene revealed={revealed} />
+              <GlyphsScene glyphs={q.glyphs} revealed={revealed} />
             </div>
           )}
           {q.scene === "boss" && (
             <BossScene
               lines={q.setup ?? []}
+              headline={q.headline}
+              note={q.headlineNote}
               revealed={revealed}
               active={snapshot.state === "QUESTION_ACTIVE"}
             />
@@ -304,8 +306,11 @@ function HostBody({
     case "FINAL":
       return (
         <div className="flex flex-1 flex-col items-center justify-center gap-6">
-          <FinalScene intensity={(snapshot.report?.averageAccuracy ?? 50) / 100} />
-          <BodyMeter progress={100} size={130} compact celebrate />
+          <FinalScene
+            finale={snapshot.finale}
+            intensity={(snapshot.report?.averageAccuracy ?? 50) / 100}
+          />
+          <Meter meter={snapshot.meter} progress={100} size={120} compact celebrate />
         </div>
       );
 
@@ -328,7 +333,10 @@ function Lobby({ snapshot, joinUrl }: { snapshot: Snapshot; joinUrl: string }) {
           <p className="mt-1 text-[11px] font-black uppercase tracking-[0.22em] text-white/45">
             {EVENT_SUBTITLE}
           </p>
-          <h1 className="display mt-4 text-5xl md:text-7xl text-glow">ENTRE NA EXPERIÊNCIA</h1>
+          <p className="mt-4 text-sm font-black uppercase tracking-[0.2em] text-white/50">
+            {snapshot.quizTitle} · {snapshot.quizPassage}
+          </p>
+          <h1 className="display mt-1 text-5xl md:text-7xl text-glow">ENTRE NA EXPERIÊNCIA</h1>
           <p className="mt-3 text-xl text-white/70">
             Aponte a câmera do celular para o QR Code. Depois é só digitar seu nome.
           </p>
@@ -554,7 +562,9 @@ function HostControls({
   snapshot: Snapshot;
   action: (body: Record<string, unknown>) => Promise<void>;
 }) {
+  const router = useRouter();
   const [confirmReset, setConfirmReset] = useState(false);
+  const [creating, setCreating] = useState(false);
   const isFinished = snapshot.state === "RESULTS";
   const progress = useMemo(
     () => (snapshot.questionNumber / snapshot.totalQuestions) * 100,
@@ -606,10 +616,35 @@ function HostControls({
               </button>
             </span>
           ) : (
-            <button className="btn btn-ghost text-sm !py-2" onClick={() => setConfirmReset(true)}>
+            <button
+              className="btn btn-ghost text-sm !py-2"
+              onClick={() => setConfirmReset(true)}
+              title="Zera a pontuação e mantém quem já está na sala"
+            >
               Reiniciar
             </button>
           )}
+          <button
+            className="btn btn-ghost text-sm !py-2"
+            title="Cria uma sala vazia, com QR novo e nenhum jogador"
+            disabled={creating}
+            onClick={async () => {
+              setCreating(true);
+              try {
+                const res = await fetch("/api/sessions", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ quizId: snapshot.quizId }),
+                });
+                const data = await res.json();
+                router.push(`/host/${data.code}`);
+              } finally {
+                setCreating(false);
+              }
+            }}
+          >
+            {creating ? "Criando..." : "Nova sala"}
+          </button>
         </div>
 
         <div className="flex items-center gap-3">

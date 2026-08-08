@@ -3,7 +3,15 @@ export type Dimension = "conhecimento" | "corpo" | "edificacao";
 export type QuestionKind = "standard" | "boss" | "final";
 
 /** Cenas cinematográficas especiais renderizadas no host. */
-export type Scene = "eyes" | "boss" | "final";
+export type Scene = "glyphs" | "boss" | "final";
+
+/** Cena visual dirigida por dados: símbolos antes e depois da revelação. */
+export interface GlyphScene {
+  before: string[];
+  after: string[];
+  captionBefore: string;
+  captionAfter: string;
+}
 
 export type Act = 1 | 2 | 3 | 4;
 
@@ -27,8 +35,11 @@ export interface Question {
   speedBonus: number;
   dimensions: Dimension[];
   scene?: Scene;
+  glyphs?: GlyphScene;
   /** Frase grande exibida no telão após a revelação. */
   headline?: string;
+  /** Linha de apoio abaixo da frase grande (usada no boss). */
+  headlineNote?: string;
   /** Texto extra do host durante a pergunta (setup do boss, caso prático...). */
   setup?: string[];
   /** Mostrar ranking depois desta pergunta. */
@@ -42,12 +53,30 @@ export interface ActInfo {
   tag: string;
 }
 
+/** Indicador coletivo que a turma preenche ao longo da experiência. */
+export interface MeterConfig {
+  variant: "body" | "unity";
+  title: string;
+  stages: { at: number; label: string }[];
+}
+
+/** Encerramento cinematográfico: símbolos que convergem e frases em sequência. */
+export interface FinaleConfig {
+  glyphs: string[];
+  beats: { at: number; lines: string[]; tone: string }[];
+}
+
 export interface Quiz {
   id: string;
   title: string;
+  subtitle: string;
   tagline: string;
+  /** Referência do bloco bíblico, exibida na home e no lobby. */
+  passage: string;
   acts: ActInfo[];
   questions: Question[];
+  meter: MeterConfig;
+  finale: FinaleConfig;
 }
 
 export type GameState =
@@ -141,17 +170,24 @@ export interface PublicQuestion {
   reference: string;
   timeLimitSec: number;
   scene?: Scene;
+  glyphs?: GlyphScene;
   setup?: string[];
   /** Só chega no REVEAL. */
   correctId?: string;
   explanation?: string;
   headline?: string;
+  headlineNote?: string;
 }
 
 export interface Snapshot {
   code: string;
+  quizId: string;
   quizTitle: string;
+  quizSubtitle: string;
   quizTagline: string;
+  quizPassage: string;
+  meter: MeterConfig;
+  finale: FinaleConfig;
   state: GameState;
   autoAdvance: boolean;
   startedAt: number | null;

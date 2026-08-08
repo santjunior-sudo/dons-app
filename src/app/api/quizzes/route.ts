@@ -14,7 +14,14 @@ export async function GET(req: Request) {
     return NextResponse.json(quiz);
   }
   return NextResponse.json({
-    quizzes: listQuizzes().map((q) => ({ id: q.id, title: q.title, questions: q.questions.length })),
+    quizzes: listQuizzes().map((q) => ({
+      id: q.id,
+      title: q.title,
+      subtitle: q.subtitle,
+      passage: q.passage,
+      tagline: q.tagline,
+      questions: q.questions.length,
+    })),
   });
 }
 
@@ -63,11 +70,16 @@ export async function POST(req: Request) {
     );
   }
 
+  const base = (body.id && getQuiz(body.id)) || donsQuiz;
   const quiz: Quiz = {
     id: body.id,
     title: body.title || "Quiz sem título",
-    tagline: body.tagline ?? donsQuiz.tagline,
-    acts: body.acts?.length ? body.acts : donsQuiz.acts,
+    subtitle: body.subtitle ?? base.subtitle,
+    tagline: body.tagline ?? base.tagline,
+    passage: body.passage ?? base.passage,
+    acts: body.acts?.length ? body.acts : base.acts,
+    meter: body.meter ?? base.meter,
+    finale: body.finale ?? base.finale,
     questions,
   };
 
