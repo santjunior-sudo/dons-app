@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: dons
+    runtime: docker
+    plan: starter        # NÃO use free: o free hiberna e a sala morre no meio da aula
+    numInstances: 1      # estado em memória exige instância única
+    healthCheckPath: /api/health
+    envVars:
+      - key: NEXT_PUBLIC_CHURCH_NAME
+        value: Igreja Adventista do Brooklin
+      - key: DONS_STATE_PATH
+        value: /data/dons-state.json
+    disk:
+      name: dons-state
+      mountPath: /data
+      sizeGB: 1

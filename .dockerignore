@@ -1,0 +1,7 @@
+node_modules
+.next
+.git
+.dons-state.json
+npm-debug.log
+README.md
+.claude
